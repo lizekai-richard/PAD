@@ -7,7 +7,7 @@ expert_epochs: 2
 lr_img: 50
 lr_teacher: 0.01
 
-buffer_path: ../buffer_storage/
+buffer_path: ../buffer_storage/convnet_loss_sorted/
 
 data_path: ../dataset
 ema_decay: 0.995
