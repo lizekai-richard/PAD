@@ -43,7 +43,7 @@ def main(args):
     #     bin_indices = np.load(bin_file)
     #     sorted_diff_indices.extend(bin_indices)
 
-    indices_file_path = "/home/kwang/zekai/DATM/data_selection/data_indices/{}.pt".format(args.sort_method)
+    indices_file_path = "../data_selection/data_indices/{}.pt".format(args.sort_method)
     sorted_diff_indices = torch.load(indices_file_path).tolist()
     print(sorted_diff_indices[:20])
     assert len(sorted_diff_indices) == len(dst_train)
