@@ -45,15 +45,17 @@ class Uncertainty(EarlyTrain):
         if self.balance:
             selection_result = np.array([], dtype=np.int64)
             scores = []
+            indices = []
             for c in range(self.args.num_classes):
                 class_index = np.arange(self.n_train)[self.dst_train.targets == c]
                 scores.append(self.rank_uncertainty(class_index))
+                indices.append(class_index)
                 selection_result = np.append(selection_result, class_index[np.argsort(scores[-1])[
                                                                :round(len(class_index) * self.fraction)]])
         else:
             scores = self.rank_uncertainty()
             selection_result = np.argsort(scores)[::-1][:self.coreset_size]
-        return {"indices": selection_result, "scores": scores}
+        return {"indices": indices, "scores": scores}
 
     def rank_uncertainty(self, index=None):
         self.model.eval()
@@ -61,7 +63,8 @@ class Uncertainty(EarlyTrain):
             train_loader = torch.utils.data.DataLoader(
                 self.dst_train if index is None else torch.utils.data.Subset(self.dst_train, index),
                 batch_size=self.args.selection_batch,
-                num_workers=self.args.workers)
+                num_workers=self.args.workers,
+                shuffle=False)
 
             scores = np.array([])
             batch_num = len(train_loader)

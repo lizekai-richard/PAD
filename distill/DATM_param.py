@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.utils
 from tqdm import tqdm
-from utils.utils_baseline import get_dataset, get_network, get_eval_pool, evaluate_synset, get_time, DiffAugment, ParamDiffAug
+from utils.utils_baseline import get_dataset, get_network, get_eval_pool, evaluate_synset, get_time, DiffAugment, plot_loss, ParamDiffAug
 import wandb
 import copy
 import random
@@ -549,8 +549,20 @@ def main(args):
         param_loss = torch.tensor(0.0).to(args.device)
         param_dist = torch.tensor(0.0).to(args.device)
 
-        param_loss += torch.nn.functional.mse_loss(student_params[-1], target_params, reduction="sum")
-        param_dist += torch.nn.functional.mse_loss(starting_params, target_params, reduction="sum")
+        param_losses = torch.nn.functional.mse_loss(student_params[-1], target_params, reduction="none")
+        param_dists = torch.nn.functional.mse_loss(starting_params, target_params, reduction="none")
+
+        _, loss_indices = torch.sort(param_losses)
+        if args.loss_threshold_low < 1.:
+            keep_indices = loss_indices[int(args.loss_threshold_low * len(param_losses)):]
+        elif args.loss_threshold_high < 1:
+            keep_indices = loss_indices[:int(args.loss_threshold_high * len(param_losses))]
+        else:
+            keep_indices = loss_indices
+        # keep_indices = (param_losses <= args.loss_threshold_high) & (param_losses >= args.loss_threshold_low)
+
+        param_loss = param_losses[keep_indices].sum()
+        param_dist = param_dists[keep_indices].sum()
 
         param_loss_list.append(param_loss)
         param_dist_list.append(param_dist)

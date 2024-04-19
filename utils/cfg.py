@@ -51,7 +51,7 @@ CFG.lr_init = 0.01  # how to init lr (alpha)
 
 # Batch sizes
 CFG.batch_real = 256  # batch size for real data
-CFG.batch_syn = None  # should only use this if you run out of VRAM
+CFG.batch_syn = 256  # should only use this if you run out of VRAM
 CFG.batch_train = 256  # batch size for training networks
 
 # Initialization for synthetic images
@@ -105,10 +105,11 @@ CFG.Momentum_y = 0.9
 
 # WanDB Project Name
 CFG.project = 'TEST'
-
+CFG.name = 'RANDOM'
 # Threshold
 CFG.threshold = 1.0
-
+CFG.loss_threshold_high = 1.0
+CFG.loss_threshold_low = 0.0
 # Record loss
 CFG.record_loss = False
 

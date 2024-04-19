@@ -1,9 +1,14 @@
 import torch
 import torch.nn as nn
+import numpy as np
 import warnings
 import types
 from collections import namedtuple
 from contextlib import contextmanager
+from utils.utils_baseline import get_network
+import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
+from matplotlib.cm import ScalarMappable
 
 
 class ReparamModule(nn.Module):
@@ -157,3 +162,38 @@ class ReparamModule(nn.Module):
             return self._forward_with_param(flat_param, *inputs, **kwinputs)
         else:
             return self._forward_with_param_and_buffers(flat_param, tuple(buffers), *inputs, **kwinputs)
+
+    def recover_loss_to_params(self, flat_loss):
+        layer_to_loss = {}
+        with torch.no_grad():
+            grouped_loss = flat_loss.split(self._param_numels)
+            for i in range(len(grouped_loss)):
+                param_info = self._param_infos[i]
+                if param_info[1] == 'bias':
+                    continue
+                layer_name = "Module {}/Parameter {}".format(param_info[0], param_info[1])
+                layer_to_loss[layer_name] = torch.mean(grouped_loss[i]).detach().cpu().item()
+        return layer_to_loss
+
+
+if __name__ == '__main__':
+    student_net = get_network("ConvNet", 3, 10, dist=False)
+    student_net = ReparamModule(student_net)
+
+    # losses = torch.load("losses.pt")
+    # layer_to_loss = student_net.recover_loss_to_params(losses)
+    # layers = list(layer_to_loss.keys())
+    # losses = list(layer_to_loss.values())
+    # norm = Normalize(vmin=np.min(losses), vmax=np.max(losses))
+    # cmap = plt.get_cmap('Reds')
+    # color_params = cmap(norm(losses))
+    # plt.figure(figsize=(12, 8))
+    # plt.bar(np.arange(len(losses)), losses, color=color_params)
+    # plt.xlabel('Layer')
+    # plt.ylabel('Average Loss')
+    # plt.title('Average Loss across Different Layers')
+    # plt.colorbar(ScalarMappable(norm=norm, cmap=cmap), label='Average Loss')
+    # plt.savefig("loss.png")
+    # print(layer_to_loss)
+
+    

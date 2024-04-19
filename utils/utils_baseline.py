@@ -16,6 +16,14 @@ from networks import MLP, ConvNet, LeNet, AlexNet, VGG11BN, VGG11, ResNet18, Res
     ResNet18_Tiny, ResNet18BN_Tiny, VGG11_Tiny
 import math
 from torch.utils.data import Subset
+import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
+from matplotlib.cm import ScalarMappable
+
+plt.rcParams['font.family'] = ['Times New Roman']  # 中文字体为楷体，英文字体为新罗马字体
+plt.rcParams['font.size'] = 12  # 坐标轴字号为12
+# plt.rcParams["font.weight"] = "bold"
+# plt.rcParams["axes.labelweight"] = "bold"
 
 
 # Custom dataset class to load the resized images and labels
@@ -243,7 +251,7 @@ def get_dataset(dataset, data_path, batch_size=1, subset="imagenette", args=None
             im, lab = dst_train[i]
             images.append(im)
             labels.append(lab)
-        images = torch.stack(images, dim=0).to(args.device)
+        images = torch.stack(images, dim=0).to("cpu")
         labels = torch.tensor(labels, dtype=torch.long, device="cpu")
         zca = K.enhance.ZCAWhitening(eps=0.1, compute_inv=True)
         zca.fit(images)
@@ -257,7 +265,7 @@ def get_dataset(dataset, data_path, batch_size=1, subset="imagenette", args=None
             im, lab = dst_test[i]
             images.append(im)
             labels.append(lab)
-        images = torch.stack(images, dim=0).to(args.device)
+        images = torch.stack(images, dim=0).to("cpu")
         labels = torch.tensor(labels, dtype=torch.long, device="cpu")
 
         zca_images = zca(images).to("cpu")
@@ -682,6 +690,45 @@ def augment(images, dc_aug_param, device):
                 noisefun(i)
 
     return images
+
+def plot_loss(layer_to_loss, save_path):
+    
+    layers = list(layer_to_loss.keys())
+    losses = list(layer_to_loss.values())
+    norm = Normalize(vmin=np.min(losses), vmax=np.max(losses))
+    cmap = plt.get_cmap('Reds')
+    color_params = cmap(norm(losses))
+    plt.figure(figsize=(12, 8))
+    plt.bar(np.arange(len(losses)), losses, color=color_params)
+    plt.xlabel('Layer')
+    plt.ylabel('Average Loss')
+    plt.title('Average Loss across Different Layers')
+    plt.colorbar(ScalarMappable(norm=norm, cmap=cmap), label='Average Loss')
+    plt.savefig(save_path)
+
+def plot_loss_interval(flat_loss, flat_dist, save_path):
+    interval = 20000
+    num_params = len(flat_loss)
+    losses = []
+    for i in range(num_params // interval):
+        param_start = i * interval
+        param_end = (i + 1) * interval if (i + 1) * interval < num_params else num_params - 1
+        param_loss = torch.sum(flat_loss[param_start: param_end]).item()
+        normalized_loss = param_loss / flat_dist
+        losses.append(normalized_loss)
+
+    print("Saving loss...")
+    norm = Normalize(vmin=np.min(losses), vmax=np.max(losses))
+    cmap = plt.get_cmap('Reds')
+    color_params = cmap(norm(losses))
+    plt.figure(figsize=(12, 8))
+    plt.bar(np.arange(len(losses)), losses, color=color_params)
+    plt.xlabel('Group')
+    plt.ylabel('Loss')
+    plt.title('Loss across Different Parameter Groups')
+    plt.colorbar(ScalarMappable(norm=norm, cmap=cmap), label='Loss')
+    plt.savefig(save_path)
+    
 
 
 def get_daparam(dataset, model, model_eval, ipc):

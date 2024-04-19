@@ -1,9 +1,9 @@
-CUDA_VISIBLE_DEVICES="1,2" 
+CUDA_VISIBLE_DEVICES="0,1" 
 cd deepcore
 
 nohup python -u main.py \
 --fraction 0.1 \
---dataset CIFAR10 \
+--dataset CIFAR100 \
 --data_path ../dataset \
 --num_exp 5 \
 --workers 10 \
@@ -15,5 +15,5 @@ nohup python -u main.py \
 --batch 128 \
 --uncertainty Entropy \
 --indices_save_dir "../data_selection/data_indices/" \
---balance False \
-> ../logs/deepcore_uncertainty_cifar10.log 2>&1 &
+--balance True \
+> ../logs/deepcore_uncertainty_cifar100.log 2>&1 &

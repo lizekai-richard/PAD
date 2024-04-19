@@ -1,5 +1,6 @@
 import os
 import torch.nn as nn
+import numpy as np
 import argparse
 import deepcore.nets as nets
 import deepcore.datasets as datasets
@@ -8,7 +9,7 @@ from torchvision import transforms
 from utils import *
 from datetime import datetime
 from time import sleep
-
+os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
 
 def main():
     parser = argparse.ArgumentParser(description='Parameter Processing')
@@ -86,9 +87,12 @@ def main():
     # Checkpoint and resumption
     parser.add_argument('--save_path', "-sp", type=str, default='', help='path to save results (default: do not save)')
     parser.add_argument('--resume', '-r', type=str, default='', help="path to latest checkpoint (default: do not load)")
+    parser.add_argument('--indices_save_dir', type=str, default="", help="directory to save scores")
 
     args = parser.parse_args()
     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    np.random.seed(42)
 
     if args.train_batch is None:
         args.train_batch = args.batch
@@ -126,193 +130,224 @@ def main():
         start_exp = 0
         start_epoch = 0
 
-    for exp in range(start_exp, args.num_exp):
-        if args.save_path != "":
-            checkpoint_name = "{dst}_{net}_{mtd}_exp{exp}_epoch{epc}_{dat}_{fr}_".format(dst=args.dataset,
-                                                                                         net=args.model,
-                                                                                         mtd=args.selection,
-                                                                                         dat=datetime.now(),
-                                                                                         exp=start_exp,
-                                                                                         epc=args.epochs,
-                                                                                         fr=args.fraction)
+    # for exp in range(start_exp, args.num_exp):
+    if args.save_path != "":
+        checkpoint_name = "{dst}_{net}_{mtd}_exp{exp}_epoch{epc}_{dat}_{fr}_".format(dst=args.dataset,
+                                                                                        net=args.model,
+                                                                                        mtd=args.selection,
+                                                                                        dat=datetime.now(),
+                                                                                        exp=start_exp,
+                                                                                        epc=args.epochs,
+                                                                                        fr=args.fraction)
 
-        print('\n================== Exp %d ==================\n' % exp)
-        print("dataset: ", args.dataset, ", model: ", args.model, ", selection: ", args.selection, ", num_ex: ",
-              args.num_exp, ", epochs: ", args.epochs, ", fraction: ", args.fraction, ", seed: ", args.seed,
-              ", lr: ", args.lr, ", save_path: ", args.save_path, ", resume: ", args.resume, ", device: ", args.device,
-              ", checkpoint_name: " + checkpoint_name if args.save_path != "" else "", "\n", sep="")
+    # print('\n================== Exp %d ==================\n' % exp)
+    print("dataset: ", args.dataset, ", model: ", args.model, ", selection: ", args.selection, ", num_ex: ",
+            args.num_exp, ", epochs: ", args.epochs, ", fraction: ", args.fraction, ", seed: ", args.seed,
+            ", lr: ", args.lr, ", save_path: ", args.save_path, ", resume: ", args.resume, ", device: ", args.device,
+            ", checkpoint_name: " + checkpoint_name if args.save_path != "" else "", "\n", sep="")
 
-        channel, im_size, num_classes, class_names, mean, std, dst_train, dst_test = datasets.__dict__[args.dataset] \
-            (args.data_path)
-        args.channel, args.im_size, args.num_classes, args.class_names = channel, im_size, num_classes, class_names
+    channel, im_size, num_classes, class_names, mean, std, dst_train, dst_test = datasets.__dict__[args.dataset] \
+        (args.data_path)
+    args.channel, args.im_size, args.num_classes, args.class_names = channel, im_size, num_classes, class_names
 
-        torch.random.manual_seed(args.seed)
+    torch.random.manual_seed(args.seed)
 
-        if "subset" in checkpoint.keys():
-            subset = checkpoint['subset']
-            selection_args = checkpoint["sel_args"]
-        else:
-            selection_args = dict(epochs=args.selection_epochs,
-                                  selection_method=args.uncertainty,
-                                  balance=args.balance,
-                                  greedy=args.submodular_greedy,
-                                  function=args.submodular
-                                  )
-            method = methods.__dict__[args.selection](dst_train, args, args.fraction, args.seed, **selection_args)
-            subset = method.select()
-        print(len(subset["indices"]))
+    if "subset" in checkpoint.keys():
+        subset = checkpoint['subset']
+        selection_args = checkpoint["sel_args"]
+    else:
+        selection_args = dict(epochs=args.selection_epochs,
+                                selection_method=args.uncertainty,
+                                balance=args.balance,
+                                greedy=args.submodular_greedy,
+                                function=args.submodular
+                                )
+        method = methods.__dict__[args.selection](dst_train, args, args.fraction, args.seed, **selection_args)
+        subset = method.select()
+
+    sorted_data_by_class = []
+    for c in range(num_classes):
+        score = subset["scores"][c]
+        index = subset["indices"][c]
+        index_score_pairs = [[i, s] for i, s in zip(index, score)]
+        sorted_pairs = list(sorted(index_score_pairs, key=lambda x: -x[1]))
+        sorted_data_by_class.append([x[0] for x in sorted_pairs])
+    
+    sorted_data_by_class = torch.tensor(sorted_data_by_class, dtype=torch.long)
+    print(sorted_data_by_class.size())
+    indices_save_path = args.indices_save_dir + args.dataset + '_' + args.selection + '.pt'
+    torch.save(sorted_data_by_class, indices_save_path)
+
+    # sorted_indices = []
+    # j = 0
+    # for _ in range(5000):
+    #     p = np.random.permutation(10)
+    #     for c in p:
+    #         sorted_indices.append(sorted_data_by_class[c][j])
+    #     j += 1
+    # assert len(sorted_indices) == 50000
+    # sorted_indices = torch.tensor(sorted_indices, dtype=torch.long)
+    # indices_save_path = args.indices_save_dir + args.dataset + '_' + args.selection + '_' + 'Balanced' + '.pt'
+    # torch.save(sorted_indices, indices_save_path)
+
+    # indices_score_pairs = [[i, score] for i, score in enumerate(subset['scores'])]
+    # sorted_indices_with_scores = sorted(indices_score_pairs, key=lambda x: -x[1])
+    # sorted_indices = torch.tensor([x[0] for x in sorted_indices_with_scores], dtype=torch.long)
+    # indices_save_path = args.indices_save_dir + args.dataset + '_' + args.selection + '_' + 'Balanced' + '.pt'
+    # print(indices_save_path)
+    # torch.save(sorted_indices, indices_save_path)
 
         # Augmentation
-        if args.dataset == "CIFAR10" or args.dataset == "CIFAR100":
-            dst_train.transform = transforms.Compose(
-                [transforms.RandomCrop(args.im_size, padding=4, padding_mode="reflect"),
-                 transforms.RandomHorizontalFlip(), dst_train.transform])
-        elif args.dataset == "ImageNet":
-            dst_train.transform = transforms.Compose([
-                transforms.RandomResizedCrop(224),
-                transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
-                transforms.Normalize(mean, std)
-            ])
+        # if args.dataset == "CIFAR10" or args.dataset == "CIFAR100":
+        #     dst_train.transform = transforms.Compose(
+        #         [transforms.RandomCrop(args.im_size, padding=4, padding_mode="reflect"),
+        #          transforms.RandomHorizontalFlip(), dst_train.transform])
+        # elif args.dataset == "ImageNet":
+        #     dst_train.transform = transforms.Compose([
+        #         transforms.RandomResizedCrop(224),
+        #         transforms.RandomHorizontalFlip(),
+        #         transforms.ToTensor(),
+        #         transforms.Normalize(mean, std)
+        #     ])
 
-        # Handle weighted subset
-        if_weighted = "weights" in subset.keys()
-        if if_weighted:
-            dst_subset = WeightedSubset(dst_train, subset["indices"], subset["weights"])
-        else:
-            dst_subset = torch.utils.data.Subset(dst_train, subset["indices"])
+        # # Handle weighted subset
+        # if_weighted = "weights" in subset.keys()
+        # if if_weighted:
+        #     dst_subset = WeightedSubset(dst_train, subset["indices"], subset["weights"])
+        # else:
+        #     dst_subset = torch.utils.data.Subset(dst_train, subset["indices"])
 
-        # BackgroundGenerator for ImageNet to speed up dataloaders
-        if args.dataset == "ImageNet":
-            train_loader = DataLoaderX(dst_subset, batch_size=args.train_batch, shuffle=True,
-                                       num_workers=args.workers, pin_memory=True)
-            test_loader = DataLoaderX(dst_test, batch_size=args.train_batch, shuffle=False,
-                                      num_workers=args.workers, pin_memory=True)
-        else:
-            train_loader = torch.utils.data.DataLoader(dst_subset, batch_size=args.train_batch, shuffle=True,
-                                                       num_workers=args.workers, pin_memory=True)
-            test_loader = torch.utils.data.DataLoader(dst_test, batch_size=args.train_batch, shuffle=False,
-                                                      num_workers=args.workers, pin_memory=True)
+        # # BackgroundGenerator for ImageNet to speed up dataloaders
+        # if args.dataset == "ImageNet":
+        #     train_loader = DataLoaderX(dst_subset, batch_size=args.train_batch, shuffle=True,
+        #                                num_workers=args.workers, pin_memory=True)
+        #     test_loader = DataLoaderX(dst_test, batch_size=args.train_batch, shuffle=False,
+        #                               num_workers=args.workers, pin_memory=True)
+        # else:
+        #     train_loader = torch.utils.data.DataLoader(dst_subset, batch_size=args.train_batch, shuffle=True,
+        #                                                num_workers=args.workers, pin_memory=True)
+        #     test_loader = torch.utils.data.DataLoader(dst_test, batch_size=args.train_batch, shuffle=False,
+        #                                               num_workers=args.workers, pin_memory=True)
 
-        # Listing cross-architecture experiment settings if specified.
-        models = [args.model]
-        if isinstance(args.cross, list):
-            for model in args.cross:
-                if model != args.model:
-                    models.append(model)
+        # # Listing cross-architecture experiment settings if specified.
+        # models = [args.model]
+        # if isinstance(args.cross, list):
+        #     for model in args.cross:
+        #         if model != args.model:
+        #             models.append(model)
 
-        for model in models:
-            if len(models) > 1:
-                print("| Training on model %s" % model)
+        # for model in models:
+        #     if len(models) > 1:
+        #         print("| Training on model %s" % model)
 
-            network = nets.__dict__[model](channel, num_classes, im_size).to(args.device)
+        #     network = nets.__dict__[model](channel, num_classes, im_size).to(args.device)
 
-            if args.device == "cpu":
-                print("Using CPU.")
-            elif args.gpu is not None:
-                torch.cuda.set_device(args.gpu[0])
-                network = nets.nets_utils.MyDataParallel(network, device_ids=args.gpu)
-            elif torch.cuda.device_count() > 1:
-                network = nets.nets_utils.MyDataParallel(network).cuda()
+        #     if args.device == "cpu":
+        #         print("Using CPU.")
+        #     elif args.gpu is not None:
+        #         torch.cuda.set_device(args.gpu[0])
+        #         network = nets.nets_utils.MyDataParallel(network, device_ids=args.gpu)
+        #     elif torch.cuda.device_count() > 1:
+        #         network = nets.nets_utils.MyDataParallel(network).cuda()
 
-            if "state_dict" in checkpoint.keys():
-                # Loading model state_dict
-                network.load_state_dict(checkpoint["state_dict"])
+        #     if "state_dict" in checkpoint.keys():
+        #         # Loading model state_dict
+        #         network.load_state_dict(checkpoint["state_dict"])
 
-            criterion = nn.CrossEntropyLoss(reduction='none').to(args.device)
+        #     criterion = nn.CrossEntropyLoss(reduction='none').to(args.device)
 
-            # Optimizer
-            if args.optimizer == "SGD":
-                optimizer = torch.optim.SGD(network.parameters(), args.lr, momentum=args.momentum,
-                                            weight_decay=args.weight_decay, nesterov=args.nesterov)
-            elif args.optimizer == "Adam":
-                optimizer = torch.optim.Adam(network.parameters(), args.lr, weight_decay=args.weight_decay)
-            else:
-                optimizer = torch.optim.__dict__[args.optimizer](network.parameters(), args.lr, momentum=args.momentum,
-                                                                 weight_decay=args.weight_decay, nesterov=args.nesterov)
+        #     # Optimizer
+        #     if args.optimizer == "SGD":
+        #         optimizer = torch.optim.SGD(network.parameters(), args.lr, momentum=args.momentum,
+        #                                     weight_decay=args.weight_decay, nesterov=args.nesterov)
+        #     elif args.optimizer == "Adam":
+        #         optimizer = torch.optim.Adam(network.parameters(), args.lr, weight_decay=args.weight_decay)
+        #     else:
+        #         optimizer = torch.optim.__dict__[args.optimizer](network.parameters(), args.lr, momentum=args.momentum,
+        #                                                          weight_decay=args.weight_decay, nesterov=args.nesterov)
 
-            # LR scheduler
-            if args.scheduler == "CosineAnnealingLR":
-                scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, len(train_loader) * args.epochs,
-                                                                       eta_min=args.min_lr)
-            elif args.scheduler == "StepLR":
-                scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=len(train_loader) * args.step_size,
-                                                            gamma=args.gamma)
-            else:
-                scheduler = torch.optim.lr_scheduler.__dict__[args.scheduler](optimizer)
-            scheduler.last_epoch = (start_epoch - 1) * len(train_loader)
+        #     # LR scheduler
+        #     if args.scheduler == "CosineAnnealingLR":
+        #         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, len(train_loader) * args.epochs,
+        #                                                                eta_min=args.min_lr)
+        #     elif args.scheduler == "StepLR":
+        #         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=len(train_loader) * args.step_size,
+        #                                                     gamma=args.gamma)
+        #     else:
+        #         scheduler = torch.optim.lr_scheduler.__dict__[args.scheduler](optimizer)
+        #     scheduler.last_epoch = (start_epoch - 1) * len(train_loader)
 
-            if "opt_dict" in checkpoint.keys():
-                optimizer.load_state_dict(checkpoint["opt_dict"])
+        #     if "opt_dict" in checkpoint.keys():
+        #         optimizer.load_state_dict(checkpoint["opt_dict"])
 
-            # Log recorder
-            if "rec" in checkpoint.keys():
-                rec = checkpoint["rec"]
-            else:
-                rec = init_recorder()
+        #     # Log recorder
+        #     if "rec" in checkpoint.keys():
+        #         rec = checkpoint["rec"]
+        #     else:
+        #         rec = init_recorder()
 
-            best_prec1 = checkpoint["best_acc1"] if "best_acc1" in checkpoint.keys() else 0.0
+        #     best_prec1 = checkpoint["best_acc1"] if "best_acc1" in checkpoint.keys() else 0.0
 
-            # Save the checkpont with only the susbet.
-            if args.save_path != "" and args.resume == "":
-                save_checkpoint({"exp": exp,
-                                 "subset": subset,
-                                 "sel_args": selection_args},
-                                os.path.join(args.save_path, checkpoint_name + ("" if model == args.model else model
-                                             + "_") + "unknown.ckpt"), 0, 0.)
+        #     # Save the checkpont with only the susbet.
+        #     if args.save_path != "" and args.resume == "":
+        #         save_checkpoint({"exp": exp,
+        #                          "subset": subset,
+        #                          "sel_args": selection_args},
+        #                         os.path.join(args.save_path, checkpoint_name + ("" if model == args.model else model
+        #                                      + "_") + "unknown.ckpt"), 0, 0.)
 
-            for epoch in range(start_epoch, args.epochs):
-                # train for one epoch
-                train(train_loader, network, criterion, optimizer, scheduler, epoch, args, rec, if_weighted=if_weighted)
+        #     for epoch in range(start_epoch, args.epochs):
+        #         # train for one epoch
+        #         train(train_loader, network, criterion, optimizer, scheduler, epoch, args, rec, if_weighted=if_weighted)
 
-                # evaluate on validation set
-                if args.test_interval > 0 and (epoch + 1) % args.test_interval == 0:
-                    prec1 = test(test_loader, network, criterion, epoch, args, rec)
+        #         # evaluate on validation set
+        #         if args.test_interval > 0 and (epoch + 1) % args.test_interval == 0:
+        #             prec1 = test(test_loader, network, criterion, epoch, args, rec)
 
-                    # remember best prec@1 and save checkpoint
-                    is_best = prec1 > best_prec1
+        #             # remember best prec@1 and save checkpoint
+        #             is_best = prec1 > best_prec1
 
-                    if is_best:
-                        best_prec1 = prec1
-                        if args.save_path != "":
-                            rec = record_ckpt(rec, epoch)
-                            save_checkpoint({"exp": exp,
-                                             "epoch": epoch + 1,
-                                             "state_dict": network.state_dict(),
-                                             "opt_dict": optimizer.state_dict(),
-                                             "best_acc1": best_prec1,
-                                             "rec": rec,
-                                             "subset": subset,
-                                             "sel_args": selection_args},
-                                            os.path.join(args.save_path, checkpoint_name + (
-                                                "" if model == args.model else model + "_") + "unknown.ckpt"),
-                                            epoch=epoch, prec=best_prec1)
+        #             if is_best:
+        #                 best_prec1 = prec1
+        #                 if args.save_path != "":
+        #                     rec = record_ckpt(rec, epoch)
+        #                     save_checkpoint({"exp": exp,
+        #                                      "epoch": epoch + 1,
+        #                                      "state_dict": network.state_dict(),
+        #                                      "opt_dict": optimizer.state_dict(),
+        #                                      "best_acc1": best_prec1,
+        #                                      "rec": rec,
+        #                                      "subset": subset,
+        #                                      "sel_args": selection_args},
+        #                                     os.path.join(args.save_path, checkpoint_name + (
+        #                                         "" if model == args.model else model + "_") + "unknown.ckpt"),
+        #                                     epoch=epoch, prec=best_prec1)
 
-            # Prepare for the next checkpoint
-            if args.save_path != "":
-                try:
-                    os.rename(
-                        os.path.join(args.save_path, checkpoint_name + ("" if model == args.model else model + "_") +
-                                     "unknown.ckpt"), os.path.join(args.save_path, checkpoint_name +
-                                     ("" if model == args.model else model + "_") + "%f.ckpt" % best_prec1))
-                except:
-                    save_checkpoint({"exp": exp,
-                                     "epoch": args.epochs,
-                                     "state_dict": network.state_dict(),
-                                     "opt_dict": optimizer.state_dict(),
-                                     "best_acc1": best_prec1,
-                                     "rec": rec,
-                                     "subset": subset,
-                                     "sel_args": selection_args},
-                                    os.path.join(args.save_path, checkpoint_name +
-                                                 ("" if model == args.model else model + "_") + "%f.ckpt" % best_prec1),
-                                    epoch=args.epochs - 1,
-                                    prec=best_prec1)
+        #     # Prepare for the next checkpoint
+        #     if args.save_path != "":
+        #         try:
+        #             os.rename(
+        #                 os.path.join(args.save_path, checkpoint_name + ("" if model == args.model else model + "_") +
+        #                              "unknown.ckpt"), os.path.join(args.save_path, checkpoint_name +
+        #                              ("" if model == args.model else model + "_") + "%f.ckpt" % best_prec1))
+        #         except:
+        #             save_checkpoint({"exp": exp,
+        #                              "epoch": args.epochs,
+        #                              "state_dict": network.state_dict(),
+        #                              "opt_dict": optimizer.state_dict(),
+        #                              "best_acc1": best_prec1,
+        #                              "rec": rec,
+        #                              "subset": subset,
+        #                              "sel_args": selection_args},
+        #                             os.path.join(args.save_path, checkpoint_name +
+        #                                          ("" if model == args.model else model + "_") + "%f.ckpt" % best_prec1),
+        #                             epoch=args.epochs - 1,
+        #                             prec=best_prec1)
 
-            print('| Best accuracy: ', best_prec1, ", on model " + model if len(models) > 1 else "", end="\n\n")
-            start_epoch = 0
-            checkpoint = {}
-            sleep(2)
+        #     print('| Best accuracy: ', best_prec1, ", on model " + model if len(models) > 1 else "", end="\n\n")
+        #     start_epoch = 0
+        #     checkpoint = {}
+        #     sleep(2)
 
 
 if __name__ == '__main__':

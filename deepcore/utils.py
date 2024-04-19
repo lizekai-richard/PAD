@@ -1,6 +1,6 @@
 import time, torch
 from argparse import ArgumentTypeError
-from prefetch_generator import BackgroundGenerator
+# from prefetch_generator import BackgroundGenerator
 
 
 class WeightedSubset(torch.utils.data.Subset):
@@ -207,6 +207,6 @@ def record_ckpt(rec, step):
     return rec
 
 
-class DataLoaderX(torch.utils.data.DataLoader):
-    def __iter__(self):
-        return BackgroundGenerator(super().__iter__())
+# class DataLoaderX(torch.utils.data.DataLoader):
+#     def __iter__(self):
+#         return BackgroundGenerator(super().__iter__())

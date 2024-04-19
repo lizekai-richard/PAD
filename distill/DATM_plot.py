@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.utils
 from tqdm import tqdm
-from utils.utils_baseline import get_dataset, get_network, get_eval_pool, evaluate_synset, get_time, DiffAugment, ParamDiffAug
+from utils.utils_baseline import get_dataset, get_network, get_eval_pool, plot_loss_interval, evaluate_synset, get_time, DiffAugment, ParamDiffAug
 import wandb
 import copy
 import random
@@ -17,6 +17,8 @@ from reparam_module import ReparamModule
 from utils.cfg import CFG as cfg
 import warnings
 import yaml
+import matplotlib.pyplot as plt
+
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -495,15 +497,6 @@ def main(args):
         start_epoch = np.random.randint(args.min_start_epoch, Upper_Bound)
         # start_epoch = np.random.randint(args.min_start_epoch, args.max_start_epoch)
         
-        
-        # threshold = np.random.uniform(0, 1)
-        # ratio = 0.6667
-        # Upper_Bound = int(ratio * (args.max_start_epoch - args.min_start_epoch))
-
-        # if threshold <= ratio:
-        #     start_epoch = np.random.randint(args.min_start_epoch, Upper_Bound)
-        # else:
-        #     start_epoch = np.random.randint(Upper_Bound, args.max_start_epoch)
 
         starting_params = expert_trajectory[start_epoch]
         target_params = expert_trajectory[start_epoch+args.expert_epochs]
@@ -551,6 +544,18 @@ def main(args):
 
         param_loss += torch.nn.functional.mse_loss(student_params[-1], target_params, reduction="sum")
         param_dist += torch.nn.functional.mse_loss(starting_params, target_params, reduction="sum")
+
+        if it % args.eval_it == 0:
+            with torch.no_grad():
+                flat_loss = torch.nn.functional.mse_loss(student_params[-1], target_params, reduction="none")
+                flat_dist = torch.nn.functional.mse_loss(starting_params, target_params, reduction="sum")
+                save_path = "datm_ipc{}/it{}.png".format(args.ipc, it)
+                plot_loss_interval(flat_loss.detach().cpu(), flat_dist.detach().cpu().item(), save_path)
+            # if args.distributed:
+            #     layer_to_loss = student_net.module.recover_loss_to_params(flat_loss)
+            # else:
+            #     layer_to_loss = student_net.recover_loss_to_params(flat_loss)
+            # plot_loss(layer_to_loss, "datm_ipc{}/it{}.png".format(args.ipc, it))
 
         param_loss_list.append(param_loss)
         param_dist_list.append(param_dist)

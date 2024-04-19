@@ -202,6 +202,7 @@ def get_dataset(dataset, data_path, batch_size=1, subset="imagenette", args=None
             images.append(im)
             labels.append(lab)
         images = torch.stack(images, dim=0).to("cpu")
+        # images = torch.stack(images, dim=0).to(args.device)
         labels = torch.tensor(labels, dtype=torch.long, device="cpu")
         zca = K.enhance.ZCAWhitening(eps=0.1, compute_inv=True)
         zca.fit(images)
@@ -216,6 +217,7 @@ def get_dataset(dataset, data_path, batch_size=1, subset="imagenette", args=None
             images.append(im)
             labels.append(lab)
         images = torch.stack(images, dim=0).to("cpu")
+        # images = torch.stack(images, dim=0).to(args.device)
         labels = torch.tensor(labels, dtype=torch.long, device="cpu")
 
         zca_images = zca(images).to("cpu")

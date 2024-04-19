@@ -11,9 +11,10 @@ from utils.utils_gsam import get_dataset, get_network, get_daparam,\
     TensorDataset, epoch, ParamDiffAug
 from utils.utils_cl_scheduler import linear_cl_scheduler, root_cl_scheduler, geometric_cl_scheduler
 import copy
-
+from multiprocessing import Process
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+os.environ["CUDA_VISIBLE_DEVICES"]="6,7"
 
 def main(args):
 
@@ -37,26 +38,20 @@ def main(args):
 
 
     ''' organize the real dataset '''
-    # bin_file_path = os.path.join(args.bins_path, args.dataset.lower())
-    # sorted_diff_indices = []
-    # for bin_file in glob.glob(bin_file_path + "/*.npy"):
-    #     bin_indices = np.load(bin_file)
-    #     sorted_diff_indices.extend(bin_indices)
 
     indices_file_path = "../data_selection/data_indices/{}.pt".format(args.sort_method)
-    sorted_diff_indices = torch.load(indices_file_path).tolist()
-    print(sorted_diff_indices[:20])
-    assert len(sorted_diff_indices) == len(dst_train)
+    sorted_diff_indices = torch.load(indices_file_path)
+    assert sorted_diff_indices.size(0) == num_classes
+    assert torch.unique(sorted_diff_indices).size(0) == 50000
 
     images_all = []
     labels_all = []
     indices_class = [[] for c in range(num_classes)]
     print("BUILDING DATASET")
-    for i in sorted_diff_indices:
+    for i in tqdm(range(len(dst_train))):
         sample = dst_train[i]
         images_all.append(torch.unsqueeze(sample[0], dim=0))
         labels_all.append(class_map[torch.tensor(sample[1]).item()])
-    #print('num of training images',len(images_all))
     len_dst_train = len(images_all)  ##50000
 
     for i, lab in tqdm(enumerate(labels_all)):
@@ -72,9 +67,29 @@ def main(args):
 
     criterion = nn.CrossEntropyLoss().to(args.device)
 
-    dst_train = TensorDataset(copy.deepcopy(images_all.detach()), copy.deepcopy(labels_all.detach()))
-    trainloader = torch.utils.data.DataLoader(dst_train, batch_size=args.batch_train, shuffle=True, num_workers=0)
+    rm_ratio = args.ratio
+    if args.remove_strategy == 'hard':
+        num_images_per_class = int(len_dst_train * (1 - rm_ratio) / num_classes)
+        remain_indices = []
+        for c in range(num_classes):
+            remain_indices.extend(sorted_diff_indices[c, :num_images_per_class].tolist())
+        print("number of images for training = %d"%(len(remain_indices)))
+        images_for_training = copy.deepcopy(images_all[remain_indices])
+        labels_for_training = copy.deepcopy(labels_all[remain_indices])
+    else:
+        num_images_to_remove_per_class = int(len_dst_train * rm_ratio / num_classes)
+        remain_indices = []
+        for c in range(num_classes):
+            remain_indices.extend(sorted_diff_indices[c, num_images_to_remove_per_class:].tolist())
+        print("number of images for training = %d"%(len(remain_indices)))
+        images_for_training = copy.deepcopy(images_all[remain_indices])
+        labels_for_training = copy.deepcopy(labels_all[remain_indices])
 
+    dst_train = TensorDataset(images_for_training, 
+                              labels_for_training)
+    assert len(dst_train) == len(remain_indices)
+    trainloader = torch.utils.data.DataLoader(dst_train, batch_size=args.batch_train, shuffle=True, num_workers=0)
+    
     trajectories = []
 
     ''' set augmentation for whole-dataset training '''
@@ -110,23 +125,34 @@ def main(args):
         timestamps.append([p.detach().cpu() for p in teacher_net.parameters()])
 
         lr_schedule = [args.train_epochs // 2 + 1]
+
+        data_size_by_class = 5000
+
         for e in range(args.train_epochs):
 
             ''' Compute proportion of the easiest data '''
-            p = linear_cl_scheduler(e, 0.2, int(0.8 * (args.train_epochs - 1)))
-            images_for_cur_epoch = images_all[:int(p * len(images_all))]
-            labels_for_cur_epoch = labels_all[:int(p * len(labels_all))]
-            dst_train_for_cur_epoch = TensorDataset(copy.deepcopy(images_for_cur_epoch.detach()), 
-                                                    copy.deepcopy(labels_for_cur_epoch.detach()))
-            train_loader_for_cur_epoch = torch.utils.data.DataLoader(dst_train_for_cur_epoch, batch_size=args.batch_train, 
-                                                                     shuffle=True, num_workers=0)
+            # p = linear_cl_scheduler(e, 0.6, int(0.8 * (args.train_epochs - 1)))
+            # p = root_cl_scheduler(e, 0.8, int(0.6 * (args.train_epochs - 1)))
+            # indices = sorted_diff_indices[:, :int(p  * data_size_by_class)].flatten()
+            # images_for_cur_epoch = images_all[indices]
+            # labels_for_cur_epoch = labels_all[indices]
+            # dst_train_for_cur_epoch = TensorDataset(copy.deepcopy(images_for_cur_epoch.detach()), 
+            #                                         copy.deepcopy(labels_for_cur_epoch.detach()))
+            # train_loader_for_cur_epoch = torch.utils.data.DataLoader(dst_train_for_cur_epoch, batch_size=args.batch_train, 
+            #                                                          shuffle=True, num_workers=0)
 
-            train_loss, train_acc = epoch("train", dataloader=train_loader_for_cur_epoch, net=teacher_net, optimizer=teacher_optim,
+            # train_loss, train_acc = epoch("train", dataloader=train_loader_for_cur_epoch, net=teacher_net, optimizer=teacher_optim,
+            #                             criterion=criterion, args=args, aug=True,scheduler=scheduler)
+
+            # test_loss, test_acc = epoch("test", dataloader=testloader, net=teacher_net, optimizer=None,
+            #                             criterion=criterion, args=args, aug=False, scheduler=scheduler)
+
+            train_loss, train_acc = epoch("train", dataloader=trainloader, net=teacher_net, optimizer=teacher_optim,
                                         criterion=criterion, args=args, aug=True,scheduler=scheduler)
 
             test_loss, test_acc = epoch("test", dataloader=testloader, net=teacher_net, optimizer=None,
                                         criterion=criterion, args=args, aug=False, scheduler=scheduler)
-
+            
             print("Itr: {}\tEpoch: {}\tTrain Acc: {}\tTest Acc: {}".format(it, e, train_acc, test_acc))
 
             timestamps.append([p.detach().cpu() for p in teacher_net.parameters()])
@@ -171,7 +197,15 @@ if __name__ == '__main__':
     parser.add_argument("--rho_min", default=2.0, type=float, help="Rho parameter for SAM.")
     parser.add_argument("--alpha", default=0.4, type=float, help="Rho parameter for SAM.")
     parser.add_argument("--adaptive", default=True, type=bool, help="True if you want to use the Adaptive SAM.")
+    parser.add_argument("--ratio", default=0, type=float, help="remove ratio")
+    parser.add_argument("--remove_strategy", default="hard", type=str)
     args = parser.parse_args()
 
-    
-    main(args)
+    process_list = []
+    for i in range(2):  
+        p = Process(target=main,args=(args,))
+        p.start()
+        process_list.append(p)
+
+    for i in process_list:
+        p.join()
