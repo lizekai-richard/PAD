@@ -16,7 +16,7 @@ import multiprocessing as mp
 import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-os.environ["CUDA_VISIBLE_DEVICES"]="7"
+# os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 
 def train(pid, args, channel, num_classes, im_size, trainloader, images_all, labels_all,
@@ -57,11 +57,14 @@ def train(pid, args, channel, num_classes, im_size, trainloader, images_all, lab
         for e in range(args.train_epochs):
             ''' Compute proportion of the easiest data '''
             # p = linear_cl_scheduler(e, 0.6, int(0.8 * (args.train_epochs - 1)))
-            if args.add_hard == 'True':
-                p = linear_cl_scheduler_acse(e, args.init_ratio, args.end_epoch)
+            if e <= args.add_end_epoch:
+                p = linear_cl_scheduler_acse(e, args.init_ratio, args.add_end_epoch)
                 indices = sorted_diff_indices[:, :int(p * data_size_by_class)].flatten()
-            elif args.rm_easy == 'True':
-                p = linear_cl_scheduler_desc(e, args.rm_start, args.rate, args.max_ratio)
+            elif args.add_end_epoch < e <= args.rm_start_epoch:
+                p = 1.0
+                indices = sorted_diff_indices.flatten()
+            else:
+                p = linear_cl_scheduler_desc(e, args.rm_start_epoch, args.rate, args.max_ratio)
                 indices = sorted_diff_indices[:, int(p * data_size_by_class):].flatten()
             
             images_for_cur_epoch = images_all[indices]
@@ -79,18 +82,19 @@ def train(pid, args, channel, num_classes, im_size, trainloader, images_all, lab
             test_loss, test_acc = epoch("test", dataloader=testloader, net=teacher_net, optimizer=None,
                                         criterion=criterion, args=args, aug=False, scheduler=scheduler)
 
-            print("Itr: {}\tEpoch: {}\tTrain Acc: {}\tTest Acc: {}".format(it, e, train_acc, test_acc))
+            print("Itr: {}\tEpoch: {}\tRatio: {}\tTrain Acc: {}\tTest Acc: {}".format(it, e, p, train_acc, test_acc))
 
             timestamps.append([p.detach().cpu() for p in teacher_net.parameters()])
 
         trajectories.append(timestamps)
 
         if len(trajectories) == args.save_interval:
-            # n = 0
+            # n = pid
             # while os.path.exists(os.path.join(save_dir, "replay_buffer_{}.pt".format(n))):
             #     n += 1
             print("Saving {}".format(os.path.join(save_dir, "replay_buffer_{}.pt".format(pid))))
             torch.save(trajectories, os.path.join(save_dir, "replay_buffer_{}.pt".format(pid)))
+            trajectories = []
 
 
 def main(args):
@@ -155,7 +159,7 @@ def main(args):
 
     process_list = []
     for pid in range(args.num_experts // 10):
-        p = mp.Process(target=train,args=(pid, args, channel, num_classes, im_size, trainloader, 
+        p = mp.Process(target=train,args=(2 * pid, args, channel, num_classes, im_size, trainloader, 
                                           images_all, labels_all, testloader, save_dir, 
                                           sorted_diff_indices))
         p.start()
@@ -183,10 +187,10 @@ if __name__ == '__main__':
     parser.add_argument('--add_hard', type=str, default='True')
     parser.add_argument('--rm_easy', type=str, default='False')
     parser.add_argument('--init_ratio', type=float, default=1.0, help='initial data ratio')
-    parser.add_argument('--rm_start', type=int, default=40)
+    parser.add_argument('--rm_start_epoch', type=int, default=40)
     parser.add_argument('--rate', type=float, default=0.005)
     parser.add_argument('--max_ratio', type=float, default=0.2)
-    parser.add_argument('--end_epoch', type=int, default=100)
+    parser.add_argument('--add_end_epoch', type=int, default=100)
     parser.add_argument('--sort_method', type=str, default='')
     parser.add_argument('--train_epochs', type=int, default=50)
     parser.add_argument('--zca', action='store_true')
