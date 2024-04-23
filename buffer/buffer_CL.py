@@ -159,7 +159,7 @@ def main(args):
 
     process_list = []
     for pid in range(args.num_experts // 10):
-        p = mp.Process(target=train,args=(2 * pid, args, channel, num_classes, im_size, trainloader, 
+        p = mp.Process(target=train,args=(pid, args, channel, num_classes, im_size, trainloader, 
                                           images_all, labels_all, testloader, save_dir, 
                                           sorted_diff_indices))
         p.start()
