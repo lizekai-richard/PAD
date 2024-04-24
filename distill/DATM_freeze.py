@@ -33,6 +33,7 @@ def manual_seed(seed=0):
 
 
 def main(args):
+
     manual_seed(seed=42)
 
     os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(x) for x in args.device])
@@ -346,19 +347,6 @@ def main(args):
     curMax_times = 0
     current_accumulated_step = 0
 
-    # load loss indices
-    saved_losses = torch.load("datm_ipc{}/loss{}.pt".format(args.ipc, 5000))
-    _, indices = torch.sort(saved_losses['loss'])
-    param_num = len(indices)
-    keep_indices = indices[int(0.75 * param_num):]
-    _indices = []
-    for i in range(param_num):
-        if i in keep_indices:
-            _indices.append(1)
-        else:
-            _indices.append(0)
-    indices = _indices
-
     for it in range(0, args.Iteration + 1):
         save_this_it = False
         wandb.log({"Progress": it}, step=it)
@@ -487,6 +475,14 @@ def main(args):
         student_net = get_network(args.model, channel, num_classes, im_size, dist=False).to(
             args.device)  # get a random model
 
+        # freeze first n layers
+        num_frozen_param = 0
+        for mn, m in student_net.named_modules():
+            if mn in ["features.{}".format(i) for i in range(7)]:
+                for n, p in m.named_parameters(recurse=False):
+                    p.requires_grad = False
+                    num_frozen_param += p.numel()
+
         student_net = ReparamModule(student_net)
 
         if args.distributed:
@@ -527,10 +523,16 @@ def main(args):
 
         starting_params = expert_trajectory[start_epoch]
         target_params = expert_trajectory[start_epoch + args.expert_epochs]
-        target_params = torch.cat([p.data.to(args.device).reshape(-1) for p in target_params], 0)
-        student_params = [
-            torch.cat([p.data.to(args.device).reshape(-1) for p in starting_params], 0).requires_grad_(True)]
         starting_params = torch.cat([p.data.to(args.device).reshape(-1) for p in starting_params], 0)
+        target_params = torch.cat([p.data.to(args.device).reshape(-1) for p in target_params], 0)
+
+        flat_starting_params = torch.cat([p.data.to(args.device).reshape(-1) for p in starting_params], 0)
+
+        if args.init_frozen == 'start':
+            flat_frozen_params = torch.clone(flat_starting_params[:num_frozen_param].detach()).requires_grad_(False)
+        elif args.init_frozen == 'target':
+            flat_frozen_params = torch.clone(target_params[:num_frozen_param].detach()).requires_grad_(False)
+        student_params = [torch.clone(flat_starting_params[num_frozen_param:].detach()).requires_grad_(True)]
 
         syn_images = image_syn
         y_hat = label_syn
@@ -552,15 +554,12 @@ def main(args):
             if args.dsa and (not args.no_aug):
                 x = DiffAugment(x, args.dsa_strategy, param=args.dsa_param)
 
+            all_params = torch.cat([flat_frozen_params, student_params[-1]])
             if args.distributed:
-                forward_params = student_params[-1].unsqueeze(0).expand(torch.cuda.device_count(), -1)
+                forward_params = all_params.unsqueeze(0).expand(torch.cuda.device_count(), -1)
             else:
-                forward_params = student_params[-1]
-
-            if it <= 500:
-                x = student_net(x, flat_param=forward_params)
-            else:
-                x = student_net(x, flat_param=forward_params, indices=indices)
+                forward_params = all_params
+            x = student_net(x, flat_param=forward_params)
             ce_loss = criterion(x, this_y)
 
             grad = torch.autograd.grad(ce_loss, student_params[-1], create_graph=True)[0]

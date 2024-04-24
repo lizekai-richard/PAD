@@ -118,6 +118,7 @@ CFG.Sequential_Generation = True
 CFG.expansion_end_epoch = 3000
 CFG.current_max_start_epoch = 20
 
+CFG.init_frozen = 'start'
 
 # Skip first evaluation
 CFG.skip_first_eva = False  # If skip first eva 
