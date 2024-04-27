@@ -1,5 +1,5 @@
 dataset: CIFAR10
-device: [0,1,2,3]
+device: [0,1,2]
 
 ipc: 1000
 syn_steps: 100
