@@ -20,7 +20,7 @@ name: sw_cl
 
 num_eval: 1
 eval_it: 1000
-skip_first_eva: True
+skip_first_eva: False
 
 lr_y: 10.
 Momentum_y: 0.9
