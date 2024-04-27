@@ -34,4 +34,4 @@ lr_lr: 0.00001
 zca: True
 
 loss_threshold_low=0.25
-loss_threshold_high=0.25
+loss_threshold_high=1
