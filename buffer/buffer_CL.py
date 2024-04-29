@@ -60,11 +60,12 @@ def train(pid, args, channel, num_classes, im_size, trainloader, images_all, lab
             if e <= args.add_end_epoch:
                 p = linear_cl_scheduler_acse(e, args.init_ratio, args.add_end_epoch)
                 indices = sorted_diff_indices[:, :int(p * data_size_by_class)].flatten()
-            elif args.add_end_epoch < e <= args.rm_start_epoch:
-                p = 1.0
-                indices = sorted_diff_indices.flatten()
+            # elif args.add_end_epoch < e <= args.rm_start_epoch:
+            #     p = 1.0
+            #     indices = sorted_diff_indices.flatten()
             else:
-                p = linear_cl_scheduler_desc(e, args.rm_start_epoch, args.rate, args.max_ratio)
+                # p = linear_cl_scheduler_desc(e, args.rm_start_epoch, args.rate, args.max_ratio)
+                p = args.rm_easy_ratio
                 indices = sorted_diff_indices[:, int(p * data_size_by_class):].flatten()
             
             images_for_cur_epoch = images_all[indices]
@@ -189,6 +190,7 @@ if __name__ == '__main__':
     parser.add_argument('--init_ratio', type=float, default=1.0, help='initial data ratio')
     parser.add_argument('--rm_start_epoch', type=int, default=40)
     parser.add_argument('--rate', type=float, default=0.005)
+    parser.add_argument('--rm_easy_ratio', type=float, default=0.1)
     parser.add_argument('--max_ratio', type=float, default=0.2)
     parser.add_argument('--add_end_epoch', type=int, default=100)
     parser.add_argument('--sort_method', type=str, default='')
@@ -206,3 +208,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     mp.set_start_method('spawn')
     main(args)
+
