@@ -14,7 +14,6 @@ python buffer_CL.py \
 --lr_teacher=0.01 \
 --mom=0. \
 --batch_train=256 \
---init_ratio=0.8 \
+--init_ratio=0.75 \
 --add_end_epoch=40 \
---rate=0.01 \
---max_ratio=0.2
+--rm_easy_ratio=0.1
