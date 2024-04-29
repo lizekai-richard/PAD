@@ -5,7 +5,7 @@ nohup python buffer_CL.py \
 --train_epochs=100 \
 --num_experts=100 \
 --zca \
---buffer_path="/home/wangkai/big_space/lzk/buffer_storage/cl_grand_75_40_01/" \
+--buffer_path="../buffer_storage/cl_grand_75_40_01/" \
 --data_path="../dataset/" \
 --sort_method="CIFAR10_GraNd" \
 --rho_max=0.01 \
