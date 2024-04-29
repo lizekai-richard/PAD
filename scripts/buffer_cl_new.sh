@@ -5,7 +5,7 @@ python buffer_CL.py \
 --train_epochs=100 \
 --num_experts=100 \
 --zca \
---buffer_path="../buffer_storage/cl_grand_80_40_60_001/" \
+--buffer_path="../buffer_storage/cl_grand_75_40_01/" \
 --data_path="../dataset/" \
 --sort_method="CIFAR10_GraNd" \
 --rho_max=0.01 \
@@ -16,6 +16,5 @@ python buffer_CL.py \
 --batch_train=256 \
 --init_ratio=0.8 \
 --add_end_epoch=40 \
---rm_start_epoch=60 \
 --rate=0.01 \
 --max_ratio=0.2
