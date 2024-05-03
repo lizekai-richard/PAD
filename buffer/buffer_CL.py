@@ -60,11 +60,10 @@ def train(pid, args, channel, num_classes, im_size, trainloader, images_all, lab
             if e <= args.add_end_epoch:
                 p = linear_cl_scheduler_acse(e, args.init_ratio, args.add_end_epoch)
                 indices = sorted_diff_indices[:, :int(p * data_size_by_class)].flatten()
-            # elif args.add_end_epoch < e <= args.rm_start_epoch:
-            #     p = 1.0
-            #     indices = sorted_diff_indices.flatten()
+            elif args.add_end_epoch < e <= args.rm_start_epoch:
+                p = 1.0
+                indices = sorted_diff_indices.flatten()
             else:
-                # p = linear_cl_scheduler_desc(e, args.rm_start_epoch, args.rate, args.max_ratio)
                 p = args.rm_easy_ratio
                 indices = sorted_diff_indices[:, int(p * data_size_by_class):].flatten()
             
