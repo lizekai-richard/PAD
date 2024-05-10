@@ -196,6 +196,7 @@ if __name__ == '__main__':
     parser.add_argument('--init_ratio', type=float, default=1.0, help='initial data ratio')
     parser.add_argument('--rm_start_epoch', type=int, default=40)
     parser.add_argument('--rate', type=float, default=0.005)
+    parser.add_argument('--rm_easy_ratio', type=float, default=0.1)
     parser.add_argument('--max_ratio', type=float, default=0.2)
     parser.add_argument('--add_end_epoch', type=int, default=100)
     parser.add_argument('--sort_method', type=str, default='')
