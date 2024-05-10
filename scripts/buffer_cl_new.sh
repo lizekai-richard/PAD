@@ -1,11 +1,11 @@
 cd buffer
-python buffer_CL.py \
+python buffer_resume.py \
 --dataset=CIFAR10 \
 --model=ConvNet \
 --train_epochs=100 \
 --num_experts=100 \
 --zca \
---buffer_path="../buffer_storage/cl_grand_75_40_01/" \
+--buffer_path="../buffer_storage/cl_grand_75_20_01_cifar10/" \
 --data_path="../dataset/" \
 --sort_method="CIFAR10_GraNd" \
 --rho_max=0.01 \
@@ -16,4 +16,6 @@ python buffer_CL.py \
 --batch_train=256 \
 --init_ratio=0.75 \
 --add_end_epoch=40 \
---rm_easy_ratio=0.1
+--rm_easy_ratio=0.1 \
+--resume=True \
+--checkpoint="../checkpoint/cl_grand_75_20_01_cifar10/"
