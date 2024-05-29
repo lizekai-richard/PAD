@@ -10,7 +10,7 @@ import torch.nn.functional as F
 import torchvision.utils
 from tqdm import tqdm
 from utils.utils_baseline import get_dataset, get_network, get_eval_pool, evaluate_synset, get_time, DiffAugment, \
-    ParamDiffAug
+    plot_loss, ParamDiffAug
 import wandb
 import copy
 import random
@@ -33,7 +33,6 @@ def manual_seed(seed=0):
 
 
 def main(args):
-
     manual_seed(seed=42)
 
     os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(x) for x in args.device])
@@ -76,7 +75,6 @@ def main(args):
         zca_trans = None
 
     wandb.login(relogin=True, key="75679f24c8b1be6e201ba2d06abe25828bd9547f")
-
     wandb.init(sync_tensorboard=False,
                project=args.project,
                name=args.name,
@@ -477,14 +475,6 @@ def main(args):
         student_net = get_network(args.model, channel, num_classes, im_size, dist=False).to(
             args.device)  # get a random model
 
-        # freeze first n layers
-        num_frozen_param = 0
-        for mn, m in student_net.named_modules():
-            if mn in ["features.{}".format(i) for i in range(7)]:
-                for n, p in m.named_parameters(recurse=False):
-                    p.requires_grad = False
-                    num_frozen_param += p.numel()
-
         student_net = ReparamModule(student_net)
 
         if args.distributed:
@@ -522,19 +512,14 @@ def main(args):
             Upper_Bound = args.max_start_epoch
 
         start_epoch = np.random.randint(args.min_start_epoch, Upper_Bound)
+        # start_epoch = np.random.randint(args.min_start_epoch, args.max_start_epoch)
 
         starting_params = expert_trajectory[start_epoch]
         target_params = expert_trajectory[start_epoch + args.expert_epochs]
-        starting_params = torch.cat([p.data.to(args.device).reshape(-1) for p in starting_params], 0)
         target_params = torch.cat([p.data.to(args.device).reshape(-1) for p in target_params], 0)
-
-        flat_starting_params = torch.cat([p.data.to(args.device).reshape(-1) for p in starting_params], 0)
-
-        if args.init_frozen == 'start':
-            flat_frozen_params = torch.clone(flat_starting_params[:num_frozen_param].detach()).requires_grad_(False)
-        elif args.init_frozen == 'target':
-            flat_frozen_params = torch.clone(target_params[:num_frozen_param].detach()).requires_grad_(False)
-        student_params = [torch.clone(flat_starting_params[num_frozen_param:].detach()).requires_grad_(True)]
+        student_params = [
+            torch.cat([p.data.to(args.device).reshape(-1) for p in starting_params], 0).requires_grad_(True)]
+        starting_params = torch.cat([p.data.to(args.device).reshape(-1) for p in starting_params], 0)
 
         syn_images = image_syn
         y_hat = label_syn
@@ -556,11 +541,10 @@ def main(args):
             if args.dsa and (not args.no_aug):
                 x = DiffAugment(x, args.dsa_strategy, param=args.dsa_param)
 
-            all_params = torch.cat([flat_frozen_params, student_params[-1]])
             if args.distributed:
-                forward_params = all_params.unsqueeze(0).expand(torch.cuda.device_count(), -1)
+                forward_params = student_params[-1].unsqueeze(0).expand(torch.cuda.device_count(), -1)
             else:
-                forward_params = all_params
+                forward_params = student_params[-1]
             x = student_net(x, flat_param=forward_params)
             ce_loss = criterion(x, this_y)
 
@@ -571,8 +555,18 @@ def main(args):
         param_loss = torch.tensor(0.0).to(args.device)
         param_dist = torch.tensor(0.0).to(args.device)
 
-        param_loss += torch.nn.functional.mse_loss(student_params[-1], target_params, reduction="sum")
-        param_dist += torch.nn.functional.mse_loss(starting_params, target_params, reduction="sum")
+        param_losses = torch.nn.functional.mse_loss(student_params[-1], target_params, reduction="none")
+        param_dists = torch.nn.functional.mse_loss(starting_params, target_params, reduction="none")
+
+        _, loss_indices = torch.sort(param_losses)
+        if args.loss_threshold_low < 1.:
+            keep_indices = loss_indices[int(args.loss_ratio * len(param_losses)):]
+        else:
+            keep_indices = loss_indices
+        # keep_indices = (param_losses <= args.loss_threshold_high) & (param_losses >= args.loss_threshold_low)
+
+        param_loss += param_losses[keep_indices].sum()
+        param_dist += param_dists[keep_indices].sum()
 
         param_loss_list.append(param_loss)
         param_dist_list.append(param_dist)

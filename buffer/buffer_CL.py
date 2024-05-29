@@ -60,13 +60,16 @@ def train(pid, args, channel, num_classes, im_size, trainloader, images_all, lab
             if e <= args.add_end_epoch:
                 p = linear_cl_scheduler_acse(e, args.init_ratio, args.add_end_epoch)
                 indices = sorted_diff_indices[:, :int(p * data_size_by_class)].flatten()
-            elif args.add_end_epoch < e <= args.rm_start_epoch:
+            elif args.add_end_epoch < e <= args.rm_epoch_first:
                 p = 1.0
                 indices = sorted_diff_indices.flatten()
-            else:
-                p = args.rm_easy_ratio
+            elif args.rm_epoch_first < e <= args.rm_epoch_second:
+                p = args.rm_easy_ratio_first
                 indices = sorted_diff_indices[:, int(p * data_size_by_class):].flatten()
-            
+            else:
+                p = args.rm_easy_ratio_second
+                indices = sorted_diff_indices[:, int(p * data_size_by_class):].flatten()
+
             images_for_cur_epoch = images_all[indices]
             labels_for_cur_epoch = labels_all[indices]
             dst_train_for_cur_epoch = TensorDataset(copy.deepcopy(images_for_cur_epoch.detach()),
@@ -187,9 +190,10 @@ if __name__ == '__main__':
     parser.add_argument('--add_hard', type=str, default='True')
     parser.add_argument('--rm_easy', type=str, default='False')
     parser.add_argument('--init_ratio', type=float, default=1.0, help='initial data ratio')
-    parser.add_argument('--rm_start_epoch', type=int, default=40)
-    parser.add_argument('--rate', type=float, default=0.005)
-    parser.add_argument('--rm_easy_ratio', type=float, default=0.1)
+    parser.add_argument('--rm_epoch_first', type=int, default=40)
+    parser.add_argument('--rm_epoch_second', type=int, default=60)
+    parser.add_argument('--rm_easy_ratio_first', type=float, default=0.1)
+    parser.add_argument('--rm_easy_ratio_second', type=float, default=0.1)
     parser.add_argument('--max_ratio', type=float, default=0.2)
     parser.add_argument('--add_end_epoch', type=int, default=100)
     parser.add_argument('--sort_method', type=str, default='')

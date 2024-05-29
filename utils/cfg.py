@@ -108,8 +108,8 @@ CFG.project = 'TEST'
 CFG.name = 'RANDOM'
 # Threshold
 CFG.threshold = 1.0
-CFG.loss_threshold_high = 1.0
-CFG.loss_threshold_low = 0.0
+CFG.loss_ratio = 0.0
+CFG.depth_ratio = 0.0
 # Record loss
 CFG.record_loss = False
 

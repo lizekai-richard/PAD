@@ -31,3 +31,6 @@ min_start_epoch: 0
 max_start_epoch: 4
 lr_lr: 0.0000001
 zca: True
+
+depth_ratio: 0.0
+loss_ratio: 0.0
