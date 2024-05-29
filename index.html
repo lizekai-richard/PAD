@@ -184,23 +184,9 @@
 							</a>
 						</span>
 						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
-							<a style="color:inherit;text-decoration:none;font-size:15px" href="supplemental.html" target="_blank">
-							<i style="padding-right:2px;font-size:23px" class="fa fa-file-code" aria-hidden="true"></i>
-							Supplementary Material
-							</a>
-						</span>
-						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
 							<a style="color:inherit;text-decoration:none;font-size:15px" href="https://github.com/ssundaram21/dreamsim" target="_blank">
 							<i style="padding-right:2px;font-size:23px" class="fab fa-github" aria-hidden="true"></i>
-							Code & Data
-							</a>
-						</span>
-						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
-							<span style="display:inline-flex;padding-top:4.2px">
-							<a style="vertical-align:text-top;color:inherit;text-decoration:none;font-size:15px" href="https://colab.research.google.com/drive/1taEOMzFE9g81D9AwH27Uhy2U82tQGAVI?usp=sharing" target="_blank">
-							<img style="padding-bottom:3px;padding-right:2px;height:18px" src="webpage_assets/colab.png" aria-hidden="true"></img>
-							Colab
-							</span>
+							Code
 							</a>
 						</span>
                     </td>
@@ -208,15 +194,9 @@
                 <tr>
                     <td align="center">
 						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
-							<a style="vertical-align:sub;color:inherit;text-decoration:none;font-size:15px" href="https://voxel51.com/blog/teaching-androids-to-dream-of-sheep/" target="_blank">
-							<img style="padding-bottom:5px;padding-right:2px;font-size:20px;height:22px" src="webpage_assets/voxel51.png" aria-hidden="true"></img>
-							Blog Post
-							</a>
-						</span>
-						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
 							<a style="vertical-align:sub;color:inherit;text-decoration:none;font-size:15px" href="https://try.fiftyone.ai/datasets/nights/samples" target="_blank">
 							<img style="padding-bottom:5px;padding-right:2px;font-size:20px;height:22px" src="webpage_assets/voxel51.png" aria-hidden="true"></img>
-							Explore the Dataset!
+							Distilled Dataset!
 							</a>
 						</span>
 						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
@@ -232,15 +212,15 @@
 
     </center>
 
-    <center>
-        <img class="round" style="width:900px" src="webpage_assetseaser.jpg">
-    </center>
-    <br>
-	<p id="teaser-description">
-        <span id="bold">Which image, A or B, is most similar to the reference?</span>
-		We generate a new benchmark of synthetic image triplets that span a wide range of mid-level variations, labeled with human similarity judgments.
-		The dots below each image indicate which image is considered most similar to the reference by humans vs several existing metrics and our new metric, DreamSim.
-    </p>
+<!--    <center>-->
+<!--        <img class="round" style="width:900px" src="webpage_assets/teaser.jpg">-->
+<!--    </center>-->
+<!--    <br>-->
+<!--	<p id="teaser-description">-->
+<!--        <span id="bold">Which image, A or B, is most similar to the reference?</span>-->
+<!--		We generate a new benchmark of synthetic image triplets that span a wide range of mid-level variations, labeled with human similarity judgments.-->
+<!--		The dots below each image indicate which image is considered most similar to the reference by humans vs several existing metrics and our new metric, DreamSim.-->
+<!--    </p>-->
 	<br>
     <hr>
 
@@ -252,22 +232,20 @@
         <tbody>
             <tr>
                 <td>
-                    Current perceptual similarity metrics operate at the level of pixels and patches.
-                    These metrics compare images in terms of their low-level colors and textures, but
-                    fail to capture mid-level similarities, and differences, in image layout, object poses,
-                    and semantic content. In this paper, we develop a perceptual metric that assesses
-                    images holistically. Our first step is to collect a new dataset of human similarity
-                    judgments over image pairs that are alike in diverse ways. Critical to this dataset
-                    is that judgments are nearly automatic and shared by all observers. To achieve
-                    this we use recent text-to-image models to create synthetic pairs that are perturbed
-                    along various dimensions. We observe that popular perceptual metrics fall short
-                    of explaining our new data, and we introduce a new metric, DreamSim, tuned to
-                    better align with human perception. We analyze how our metric is affected by
-                    different visual attributes, and find that it focuses heavily on foreground objects and
-                    semantic content while also being sensitive to color and layout. Notably, despite
-                    being trained on synthetic data, our metric generalizes to real images, giving strong
-                    results on retrieval and reconstruction tasks. Furthermore, our metric outperforms
-                    both prior learned metrics and recent large vision models on these tasks.
+                    Dataset Distillation aims to compress a large dataset into a significantly more compact,
+                    synthetic one without compromising the performance of the trained models. To achieve this,
+                    existing methods use the agent model to extract information from the target dataset and
+                    embed it into the distilled dataset. Consequently, the quality of extracted and embedded
+                    information determines the quality of the distilled dataset. In this work, we find that
+                    existing methods introduce misaligned information in both information extraction and embedding
+                    stages. To alleviate this, we propose Prioritize Alignment in Dataset Distillation (PAD),
+                    which aligns information from the following two perspectives. 1) We prune the target dataset
+                    according to the compressing ratio to filter the information that can be extracted by the agent
+                    model. 2) We use only deep layers of the agent model to perform the distillation to avoid
+                    excessively introducing low-level information. This simple strategy effectively filters out
+                    misaligned information and brings non-trivial improvement for mainstream matching-based distillation
+                    algorithms. Furthermore, built on trajectory matching, \textbf{PAD} achieves remarkable improvements
+                    on various benchmarks, achieving state-of-the-art performance.
 
                 </td>
             </tr>
@@ -283,38 +261,41 @@
             <div class="col" id="pip-container" class="code-col" style="flex-direction: column;display:flex;" >
             <p>Installation:</p>
             <code>
-                pip install dreamsim
+                git clone https://github.com/lizekai-richard/PAD.git
             </code>
 			<br>
 			<div style="flex-grow: 1;"></div>
-			<p>Preliminaries:</p>
+			<p> Environment: </p>
             <code>
-            from dreamsim import dreamsim
-			<br>
-			from PIL import Image
-			<br>
-			<br>
-			model, preprocess = dreamsim(pretrained=True, cache_dir="~/.cache")
+                <br>
+                conda env create -f environment.yaml
+                <br> <br>
+                conda activate distillation
+                <br>
             </code>
             </div>
             <div class="col" id="example-container" class="code-col" style="flex-direction: column;display:flex;">
                 <p>Usage:</p>
                 <code>
-				# Feature extraction
+				# Train Expert Trajectories
 				<br>
-                img1 = preprocess(Image.open("img1_path"))
+                    cd buffer
+                    python buffer_CL.py --dataset=CIFAR10 --model=ConvNet --train_epochs=100 --num_experts=100 --zca --buffer_path=../buffer_storage/
                 <br><br>
-                embedding = model.embed(img1)
+                    --data_path=../dataset/ --sort_method="CIFAR10_GraNd" --init_ratio=0.75 --add_end_epoch=20 --rm_epoch_first=40 --rm_epoch_second=60
+                <br><br>
+                    --rm_easy_ratio_first=0.1 --rm_easy_ratio_second=0.2
+                    <br>
                 <br>
-                <br>
-				# Perceptual similarity metric
+				# Distillation (filter parameters by depth)
+                    cd distill
 				<br>
-                img1 = preprocess(Image.open("img1_path"))
+                    python PAD_depth.py --cfg ../configs/xxxx.yaml
                 <br>
-                img2 = preprocess(Image.open("img2_path"))
+                # Distillation (filter parameters by loss)
                 <br>
 				<br>
-                distance = model(img1, img2)
+                python PAD_loss.py --cfg ../configs/xxxx.yaml
             </code>
             </div>
         </div>
