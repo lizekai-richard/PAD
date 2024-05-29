@@ -109,28 +109,28 @@
             </tbody>
         </table>
 
-        <table align="center" width="900px">
+        <table align="center" width="880px">
             <tbody>
                 <tr>
-                    <td align="center" width="225px">
+                    <td align="center" width="200px">
                         <center>
                             <span style="font-size:22px">Ahmad Sajedi<sup
                                         style="font-size: 0.7em;padding-left: 1px;">4</sup></span>
                         </center>
                     </td>
-                    <td align="center" width="225px">
+                    <td align="center" width="190px">
                         <center>
                             <span style="font-size:22px">Kai Wang<sup
                                         style="font-size: 0.7em;padding-left: 1px;">1</sup></span>
                         </center>
                     </td>
-                    <td align="center" width="225px">
+                    <td align="center" width="300px">
                         <center>
                             <span style="font-size:22px">Konstantinos N Plataniotis<sup
                                         style="font-size: 0.7em;padding-left: 1px;">3</sup></span>
                         </center>
                     </td>
-                    <td align="center" width="225px">
+                    <td align="center" width="190px">
                         <center>
                             <span style="font-size:22px">Yang You<sup
                                         style="font-size: 0.7em;padding-left: 1px;">1</sup></span>
@@ -139,23 +139,23 @@
                 </tr>
             </tbody>
         </table>
-        <table align="center" width="700px">
+        <table align="center" width="500px">
             <tbody>
                 <tr>
                     <td style="padding:10px">
-						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">1</sup><img style="height:45px" src="webpage_assets/nus.png">
+						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">1</sup><img style="width:80px;height:60px" src="webpage_assets/nus.png">
                     </td>
                     <td style="padding:10px">
-						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">2</sup><img style="height:45px" src="webpage_assets/xidian.png">
+						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">2</sup><img style="width:80px;height:60px" src="webpage_assets/xidian.png">
                     </td>
                     <td style="padding:10px">
-						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">3</sup><img style="height:45px" src="webpage_assets/cmu.png">
+						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">3</sup><img style="width:80px;height:60px" src="webpage_assets/cmu.png">
                     </td>
                     <td style="padding:10px">
-						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">3</sup><img style="height:45px" src="webpage_assets/ut.png">
+						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">3</sup><img style="width:80px;height:60px" src="webpage_assets/ut.png">
                     </td>
                     <td style="padding:10px">
-						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">3</sup><img style="height:45px" src="webpage_assets/shanghaiailab.png">
+						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">3</sup><img style="width:80px;height:60px" src="webpage_assets/shanghaiailab.png">
                     </td>
                 </tr>
             </tbody>
@@ -257,57 +257,57 @@
             </tr>
         </tbody>
     </table>
-    <br>
-    <hr>
-    <center>
-        <h1>Installation and Usage</h1>
-    </center>
-    <div class="container-fluid" id="code-container" align="center" width="900px">
-        <div class="row">
-            <div class="col" id="pip-container" class="code-col" style="flex-direction: column;display:flex;" >
-            <p>Installation:</p>
-            <code>
-                git clone https://github.com/lizekai-richard/PAD.git
-            </code>
-			<br>
-			<div style="flex-grow: 1;"></div>
-			<p> Environment: </p>
-            <code>
-                <br>
-                conda env create -f environment.yaml
-                <br> <br>
-                conda activate distillation
-                <br>
-            </code>
-            </div>
-            <div class="col" id="example-container" class="code-col" style="flex-direction: column;display:flex;">
-                <p>Usage:</p>
-                <code>
-				# Train Expert Trajectories
-				<br>
-                    cd buffer
-                    python buffer_CL.py --dataset=CIFAR10 --model=ConvNet --train_epochs=100 --num_experts=100 --zca --buffer_path=../buffer_storage/
-                <br><br>
-                    --data_path=../dataset/ --sort_method="CIFAR10_GraNd" --init_ratio=0.75 --add_end_epoch=20 --rm_epoch_first=40 --rm_epoch_second=60
-                <br><br>
-                    --rm_easy_ratio_first=0.1 --rm_easy_ratio_second=0.2
-                    <br>
-                <br>
-				# Distillation (filter parameters by depth)
-                    cd distill
-				<br>
-                    python PAD_depth.py --cfg ../configs/xxxx.yaml
-                <br>
-                # Distillation (filter parameters by loss)
-                <br>
-				<br>
-                python PAD_loss.py --cfg ../configs/xxxx.yaml
-            </code>
-            </div>
-        </div>
-    </div>
-    <br>
-    <hr>
+<!--    <br>-->
+<!--    <hr>-->
+<!--    <center>-->
+<!--        <h1>Installation and Usage</h1>-->
+<!--    </center>-->
+<!--    <div class="container-fluid" id="code-container" align="center" width="900px">-->
+<!--        <div class="row">-->
+<!--            <div class="col" id="pip-container" class="code-col" style="flex-direction: column;display:flex;" >-->
+<!--            <p>Installation:</p>-->
+<!--            <code>-->
+<!--                git clone https://github.com/lizekai-richard/PAD.git-->
+<!--            </code>-->
+<!--			<br>-->
+<!--			<div style="flex-grow: 1;"></div>-->
+<!--			<p> Environment: </p>-->
+<!--            <code>-->
+<!--                <br>-->
+<!--                conda env create -f environment.yaml-->
+<!--                <br> <br>-->
+<!--                conda activate distillation-->
+<!--                <br>-->
+<!--            </code>-->
+<!--            </div>-->
+<!--            <div class="col" id="example-container" class="code-col" style="flex-direction: column;display:flex;">-->
+<!--                <p>Usage:</p>-->
+<!--                <code>-->
+<!--				# Train Expert Trajectories-->
+<!--				<br>-->
+<!--                    cd buffer-->
+<!--                    python buffer_CL.py &#45;&#45;dataset=CIFAR10 &#45;&#45;model=ConvNet &#45;&#45;train_epochs=100 &#45;&#45;num_experts=100 &#45;&#45;zca &#45;&#45;buffer_path=../buffer_storage/-->
+<!--                <br><br>-->
+<!--                    &#45;&#45;data_path=../dataset/ &#45;&#45;sort_method="CIFAR10_GraNd" &#45;&#45;init_ratio=0.75 &#45;&#45;add_end_epoch=20 &#45;&#45;rm_epoch_first=40 &#45;&#45;rm_epoch_second=60-->
+<!--                <br><br>-->
+<!--                    &#45;&#45;rm_easy_ratio_first=0.1 &#45;&#45;rm_easy_ratio_second=0.2-->
+<!--                    <br>-->
+<!--                <br>-->
+<!--				# Distillation (filter parameters by depth)-->
+<!--                    cd distill-->
+<!--				<br>-->
+<!--                    python PAD_depth.py &#45;&#45;cfg ../configs/xxxx.yaml-->
+<!--                <br>-->
+<!--                # Distillation (filter parameters by loss)-->
+<!--                <br>-->
+<!--				<br>-->
+<!--                python PAD_loss.py &#45;&#45;cfg ../configs/xxxx.yaml-->
+<!--            </code>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    <br>-->
+<!--    <hr>-->
 
 
     <center>
