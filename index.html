@@ -48,175 +48,174 @@
 </head>
 
 <body>
-<!--    <br>-->
-<!--    <center>-->
-<!--        <span class="near-black" style="font-size:36px;font-weight:bold">DreamSim: Learning New Dimensions of</span>-->
-<!--        <br>-->
+    <br>
+    <center>
+        <span class="near-black" style="font-size:36px;font-weight:bold">Prioritize Alignment in Dataset Distillation</span>
+        <br>
 <!--		<span class="near-black" style="font-size:36px;font-weight:bold">Human Visual Similarity using Synthetic Data</span>-->
 <!--        <br>-->
 <!--		<span class="near-black" style="font-size:32px;">NeurIPS 2023 Spotlight</span>-->
 <!--        <br>-->
-<!--        <table align="center" width="900px">-->
-<!--            <tbody>-->
-<!--                <tr>-->
-<!--                    <td align="center" width="215px">-->
-<!--                        <center>-->
-<!--                            <span style="font-size:22px"><a href="https://stephanie-fu.github.io/">Stephanie-->
-<!--                                    Fu</a><sup style="vertical-align: sub;padding-left: 2px">*</sup><sup style="font-size: 0.7em;">1</sup>-->
-<!--                                </span>-->
-<!--                        </center>-->
-<!--                    </td>-->
-<!--                    <td align="center" width="235px">-->
-<!--                        <center>-->
-<!--                            <span style="font-size:22px"><a href="https://netanel-tamir.github.io/">Netanel Y.-->
-<!--                                    Tamir</a><sup style="vertical-align: sub;padding-left: 2px">*</sup><sup-->
-<!--                                        style="font-size: 0.7em;">2</sup></span>-->
-<!--                        </center>-->
-<!--                    </td>-->
-<!--                    <td align="center" width="260px">-->
-<!--                        <center>-->
-<!--                            <span style="font-size:22px"><a href="https://ssundaram21.github.io/">Shobhita-->
-<!--                                    Sundaram</a><sup style="vertical-align: sub;padding-left: 2px">*</sup><sup-->
-<!--                                        style="font-size: 0.7em;">1</sup></span>-->
-<!--                        </center>-->
-<!--                    </td>-->
-<!--                    <td align="center" width="190px">-->
-<!--                        <center>-->
-<!--                            <span style="font-size:22px"><a href="https://people.csail.mit.edu/lrchai/">Lucy-->
-<!--                                    Chai</a><sup style="font-size: 0.7em;padding-left: 1px;">1</sup></span>-->
-<!--                        </center>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--            </tbody>-->
-<!--        </table>-->
-<!--        <table align="center" width="675px">-->
-<!--            <tbody>-->
-<!--                <tr>-->
-<!--                    <td align="center" width="225px">-->
-<!--                        <center>-->
-<!--                            <span style="font-size:22px"><a href="http://richzhang.github.io/">Richard Zhang</a><sup-->
-<!--                                        style="font-size: 0.7em;padding-left: 2px;">3</sup></span>-->
-<!--                        </center>-->
-<!--                    </td>-->
-<!--                    <td align="center" width="225px">-->
-<!--                        <center>-->
-<!--                            <span style="font-size:22px"><a href="https://www.weizmann.ac.il/math/dekel/home">Tali-->
-<!--                                    Dekel</a><sup style="font-size: 0.7em;padding-left: 2px;">2</sup></span>-->
-<!--                        </center>-->
-<!--                    </td>-->
-<!--                    <td align="center" width="225px">-->
-<!--                        <center>-->
-<!--                            <span style="font-size:22px"><a href="http://web.mit.edu/phillipi/">Phillip Isola</a><sup-->
-<!--                                        style="font-size: 0.7em;padding-left: 1px;">1</sup></span>-->
-<!--                        </center>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--            </tbody>-->
-<!--        </table>-->
-<!--        <table align="center" width="600px">-->
-<!--            <tbody>-->
-<!--                <tr>-->
-<!--                    <td style="padding:10px">-->
-<!--						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">1</sup><img style="height:45px" src="webpage_assetsIT.png">-->
-<!--                    </td>-->
-<!--                    <td style="padding:10px">-->
-<!--						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">2</sup><img style="height:45px" src="webpage_assetsIS.png">-->
-<!--                    </td>-->
-<!--                    <td style="padding:10px">-->
-<!--						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">3</sup><img style="height:45px" src="webpage_assetsdobe.png">-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--            </tbody>-->
-<!--        </table>-->
-<!--        <table align="center" width="500px">-->
-<!--            <tbody>-->
-<!--                <tr>-->
-<!--                    <td align="center" width="500px">-->
-<!--                        <center>-->
-<!--                            <i><span style="font-size:14px">* Equal contribution, order decided by random-->
-<!--                                    seed</span></i>-->
-<!--                        </center>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--            </tbody>-->
-<!--        </table>-->
-<!--        <table width="800" border="0" align="center" class="menu"-->
-<!--            style="margin-bottom: 20px;margin-top: 20px;font-weight: bold;font-size: 20px;">-->
-<!--            <tbody>-->
-<!--                <tr>-->
-<!--                    <td align="center">-->
-<!--						&lt;!&ndash;<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">-->
-<!--							<a style="color:inherit;text-decoration:none;font-size:15px" href="./2306.09344.pdf" target="_blank">-->
-<!--							<i style="padding-right:2px;font-size:23px" class="fa fa-file-pdf" aria-hidden="true"></i>-->
-<!--							Paper-->
-<!--							</a>-->
-<!--						</span>&ndash;&gt;-->
-<!--						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">-->
-<!--							<a style="vertical-align:sub;color:inherit;text-decoration:none;font-size:15px" href="https://arxiv.org/abs/2306.09344" target="_blank">-->
-<!--							<i style="padding-right:2px;font-size:20px" class="ai ai-arxiv" aria-hidden="true"></i>-->
-<!--							Arxiv-->
-<!--							</a>-->
-<!--						</span>-->
-<!--						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">-->
-<!--							<a style="color:inherit;text-decoration:none;font-size:15px" href="supplemental.html" target="_blank">-->
-<!--							<i style="padding-right:2px;font-size:23px" class="fa fa-file-code" aria-hidden="true"></i>-->
-<!--							Supplementary Material-->
-<!--							</a>-->
-<!--						</span>-->
-<!--						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">-->
-<!--							<a style="color:inherit;text-decoration:none;font-size:15px" href="https://github.com/ssundaram21/dreamsim" target="_blank">-->
-<!--							<i style="padding-right:2px;font-size:23px" class="fab fa-github" aria-hidden="true"></i>-->
-<!--							Code & Data-->
-<!--							</a>-->
-<!--						</span>-->
-<!--						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">-->
-<!--							<span style="display:inline-flex;padding-top:4.2px">-->
-<!--							<a style="vertical-align:text-top;color:inherit;text-decoration:none;font-size:15px" href="https://colab.research.google.com/drive/1taEOMzFE9g81D9AwH27Uhy2U82tQGAVI?usp=sharing" target="_blank">-->
-<!--							<img style="padding-bottom:3px;padding-right:2px;height:18px" src="webpage_assets/colab.png" aria-hidden="true"></img>-->
-<!--							Colab-->
-<!--							</span>-->
-<!--							</a>-->
-<!--						</span>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td align="center">-->
-<!--						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">-->
-<!--							<a style="vertical-align:sub;color:inherit;text-decoration:none;font-size:15px" href="https://voxel51.com/blog/teaching-androids-to-dream-of-sheep/" target="_blank">-->
-<!--							<img style="padding-bottom:5px;padding-right:2px;font-size:20px;height:22px" src="webpage_assets/voxel51.png" aria-hidden="true"></img>-->
-<!--							Blog Post-->
-<!--							</a>-->
-<!--						</span>-->
-<!--						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">-->
-<!--							<a style="vertical-align:sub;color:inherit;text-decoration:none;font-size:15px" href="https://try.fiftyone.ai/datasets/nights/samples" target="_blank">-->
-<!--							<img style="padding-bottom:5px;padding-right:2px;font-size:20px;height:22px" src="webpage_assets/voxel51.png" aria-hidden="true"></img>-->
-<!--							Explore the Dataset!-->
-<!--							</a>-->
-<!--						</span>-->
-<!--						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">-->
-<!--							<a style="vertical-align:sub;color:inherit;text-decoration:none;font-size:15px" href="#bibtex" target="_self">-->
-<!--							<i style="padding-right:2px;font-size:20px" class="fa fa-quote-left" aria-hidden="true"></i>-->
-<!--							Bibtex-->
-<!--							</a>-->
-<!--						</span>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--            </tbody>-->
-<!--        </table>-->
+        <table align="center" width="900px">
+            <tbody>
+                <tr>
+                    <td align="center" width="215px">
+                        <center>
+                            <span style="font-size:22px">Zekai
+                                    Li<sup style="vertical-align: sub;padding-left: 2px">*</sup><sup style="font-size: 0.7em;">1</sup>
+                            </span>
+                        </center>
+                    </td>
+                    <td align="center" width="235px">
+                        <center>
+                            <span style="font-size:22px">Ziyao Guo<sup style="vertical-align: sub;padding-left: 2px">*</sup><sup
+                                        style="font-size: 0.7em;">2</sup></span>
+                        </center>
+                    </td>
+                    <td align="center" width="260px">
+                        <center>
+                            <span style="font-size:22px"><a href="https://ssundaram21.github.io/">Shobhita
+                                    Sundaram</a><sup style="vertical-align: sub;padding-left: 2px">*</sup><sup
+                                        style="font-size: 0.7em;">1</sup></span>
+                        </center>
+                    </td>
+                    <td align="center" width="190px">
+                        <center>
+                            <span style="font-size:22px"><a href="https://people.csail.mit.edu/lrchai/">Lucy
+                                    Chai</a><sup style="font-size: 0.7em;padding-left: 1px;">1</sup></span>
+                        </center>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table align="center" width="675px">
+            <tbody>
+                <tr>
+                    <td align="center" width="225px">
+                        <center>
+                            <span style="font-size:22px"><a href="http://richzhang.github.io/">Richard Zhang</a><sup
+                                        style="font-size: 0.7em;padding-left: 2px;">3</sup></span>
+                        </center>
+                    </td>
+                    <td align="center" width="225px">
+                        <center>
+                            <span style="font-size:22px"><a href="https://www.weizmann.ac.il/math/dekel/home">Tali
+                                    Dekel</a><sup style="font-size: 0.7em;padding-left: 2px;">2</sup></span>
+                        </center>
+                    </td>
+                    <td align="center" width="225px">
+                        <center>
+                            <span style="font-size:22px"><a href="http://web.mit.edu/phillipi/">Phillip Isola</a><sup
+                                        style="font-size: 0.7em;padding-left: 1px;">1</sup></span>
+                        </center>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table align="center" width="600px">
+            <tbody>
+                <tr>
+                    <td style="padding:10px">
+						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">1</sup><img style="height:45px" src="webpage_assetsIT.png">
+                    </td>
+                    <td style="padding:10px">
+						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">2</sup><img style="height:45px" src="webpage_assetsIS.png">
+                    </td>
+                    <td style="padding:10px">
+						<sup style="padding-right: 2px;font-size: 18px;top: -0.85em;">3</sup><img style="height:45px" src="webpage_assetsdobe.png">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table align="center" width="500px">
+            <tbody>
+                <tr>
+                    <td align="center" width="500px">
+                        <center>
+                            <i><span style="font-size:14px">* Equal contribution, order decided by random
+                                    seed</span></i>
+                        </center>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table width="800" border="0" align="center" class="menu"
+            style="margin-bottom: 20px;margin-top: 20px;font-weight: bold;font-size: 20px;">
+            <tbody>
+                <tr>
+                    <td align="center">
+						<!--<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
+							<a style="color:inherit;text-decoration:none;font-size:15px" href="./2306.09344.pdf" target="_blank">
+							<i style="padding-right:2px;font-size:23px" class="fa fa-file-pdf" aria-hidden="true"></i>
+							Paper
+							</a>
+						</span>-->
+						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
+							<a style="vertical-align:sub;color:inherit;text-decoration:none;font-size:15px" href="https://arxiv.org/abs/2306.09344" target="_blank">
+							<i style="padding-right:2px;font-size:20px" class="ai ai-arxiv" aria-hidden="true"></i>
+							Arxiv
+							</a>
+						</span>
+						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
+							<a style="color:inherit;text-decoration:none;font-size:15px" href="supplemental.html" target="_blank">
+							<i style="padding-right:2px;font-size:23px" class="fa fa-file-code" aria-hidden="true"></i>
+							Supplementary Material
+							</a>
+						</span>
+						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
+							<a style="color:inherit;text-decoration:none;font-size:15px" href="https://github.com/ssundaram21/dreamsim" target="_blank">
+							<i style="padding-right:2px;font-size:23px" class="fab fa-github" aria-hidden="true"></i>
+							Code & Data
+							</a>
+						</span>
+						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
+							<span style="display:inline-flex;padding-top:4.2px">
+							<a style="vertical-align:text-top;color:inherit;text-decoration:none;font-size:15px" href="https://colab.research.google.com/drive/1taEOMzFE9g81D9AwH27Uhy2U82tQGAVI?usp=sharing" target="_blank">
+							<img style="padding-bottom:3px;padding-right:2px;height:18px" src="webpage_assets/colab.png" aria-hidden="true"></img>
+							Colab
+							</span>
+							</a>
+						</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center">
+						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
+							<a style="vertical-align:sub;color:inherit;text-decoration:none;font-size:15px" href="https://voxel51.com/blog/teaching-androids-to-dream-of-sheep/" target="_blank">
+							<img style="padding-bottom:5px;padding-right:2px;font-size:20px;height:22px" src="webpage_assets/voxel51.png" aria-hidden="true"></img>
+							Blog Post
+							</a>
+						</span>
+						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
+							<a style="vertical-align:sub;color:inherit;text-decoration:none;font-size:15px" href="https://try.fiftyone.ai/datasets/nights/samples" target="_blank">
+							<img style="padding-bottom:5px;padding-right:2px;font-size:20px;height:22px" src="webpage_assets/voxel51.png" aria-hidden="true"></img>
+							Explore the Dataset!
+							</a>
+						</span>
+						<span class="bg-near-black f6 no_hover br-pill ph3 pv2 dib" style="vertical-align:top;height:36px">
+							<a style="vertical-align:sub;color:inherit;text-decoration:none;font-size:15px" href="#bibtex" target="_self">
+							<i style="padding-right:2px;font-size:20px" class="fa fa-quote-left" aria-hidden="true"></i>
+							Bibtex
+							</a>
+						</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-<!--    </center>-->
+    </center>
 
-<!--    <center>-->
-<!--        <img class="round" style="width:900px" src="webpage_assetseaser.jpg">-->
-<!--    </center>-->
-<!--    <br>-->
-<!--	<p id="teaser-description">-->
-<!--        <span id="bold">Which image, A or B, is most similar to the reference?</span> -->
-<!--		We generate a new benchmark of synthetic image triplets that span a wide range of mid-level variations, labeled with human similarity judgments.-->
-<!--		The dots below each image indicate which image is considered most similar to the reference by humans vs several existing metrics and our new metric, DreamSim.-->
-<!--    </p>-->
-<!--	<br>-->
-<!--    <hr>-->
+    <center>
+        <img class="round" style="width:900px" src="webpage_assetseaser.jpg">
+    </center>
+    <br>
+	<p id="teaser-description">
+        <span id="bold">Which image, A or B, is most similar to the reference?</span>
+		We generate a new benchmark of synthetic image triplets that span a wide range of mid-level variations, labeled with human similarity judgments.
+		The dots below each image indicate which image is considered most similar to the reference by humans vs several existing metrics and our new metric, DreamSim.
+    </p>
+	<br>
+    <hr>
 
     <center>
         <h1>Abstract</h1>
